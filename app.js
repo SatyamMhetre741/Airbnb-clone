@@ -1,6 +1,7 @@
 // core module
 const path = require('path');
-const dbpath = "mongodb+srv://satyam:root@cluster0.xxktm1z.mongodb.net/airbnb?retryWrites=true&w=majority&appName=Cluster0";
+const dbpath = process.env.MONGODB_URI;
+const sessionSecret = process.env.SESSION_SECRET;
 // External module
 const express = require('express');
 const session = require('express-session');
