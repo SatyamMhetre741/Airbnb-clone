@@ -1,0 +1,61 @@
+<%- include('../partials/head') %>
+<body class="bg-gray-50 min-h-screen">
+    <%- include('../partials/header') %>
+    <%- include('../partials/nav') %>
+
+    <main class="max-w-3xl mx-auto mt-10 px-4">
+        <h1 class="text-3xl font-bold text-center mb-6">Edit home details</h1>
+        <p class="text-gray-600 text-center mb-8">Edit the details of the home below.</p>
+        
+        <% if (locals.error) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <%= error %>
+            </div>
+        <% } %>
+          <form action="/host/edit-home/<%= home._id %>" method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-md">
+            
+            <input type="hidden" name="id" value="<%= home._id %>">
+
+            <div class="mb-6">
+                <label for="houseName" class="block text-gray-700 font-semibold mb-2">Property Name</label>
+                <input type="text" id="houseName" name="houseName" placeholder="E.g., Cozy Beach House" value="<%= home.houseName%>" required 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="mb-6">   
+                <label for="Location" class="block text-gray-700 font-semibold mb-2">Location</label>
+                <input type="text" id="Location" name="Location" placeholder="E.g., Miami, Florida" required 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="<%= home.Location%>"/>
+            </div>
+            
+            <div class="mb-6">   
+                <label for="ppn" class="block text-gray-700 font-semibold mb-2">Price Per Night (₹)</label>
+                <input type="text" id="ppn" name="ppn" placeholder="E.g., 5000" required value="<%= home.ppn %>"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            
+            <div class="mb-6">
+                <label for="photo" class="block text-gray-700 font-semibold mb-2">Property Photo</label>
+                <div class="flex items-center mb-2">
+                    <img src="<%= home.photoUrl %>" alt="<%= home.houseName %>" class="w-24 h-24 object-cover rounded mr-4">
+                    <span class="text-gray-600">Current photo</span>
+                </div>
+                <input type="file" accept="image/*" id="photo" name="photo"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <p class="text-gray-500 text-sm mt-1">Upload a new image or leave empty to keep the current one</p>
+                <input type="hidden" name="currentPhotoUrl" value="<%= home.photoUrl %>">
+            </div>
+            
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg transition duration-300">
+                    Update Property
+                </button>
+            </div>
+        </form>
+        
+        <div class="text-center mt-6">
+            <a href="/host/host-home-list" class="text-blue-500 hover:underline">View my listed properties</a>
+        </div>
+    </main>
+</body>
+</html>

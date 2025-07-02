@@ -1,0 +1,40 @@
+<nav class="fixed top-0 left-0 right-0 bg-white bg-opacity-80 backdrop-filter backdrop-blur-sm text-gray-700 shadow-md py-3 z-50">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between">
+            <!-- Logo -->
+            <a href="/" class="flex items-center">
+                <img src="/images/airbnb-logo.svg" alt="Airbnb Logo" class="h-8 w-8 mr-2" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/6/69/Airbnb_Logo_B%C3%A9lo.svg'; this.onerror=null;">
+                <span class="font-bold text-xl text-rose-500">airbnb</span>
+            </a>
+            
+            <!-- Navigation links - centered -->
+            <div class="flex items-center justify-center space-x-8">
+                <a href="/" class="hover:text-blue-500 transition-colors duration-300 font-medium px-2">Home</a>
+                <% if(isLoggedIn) { %>
+                    <a href="/store/home" class="hover:text-blue-500 transition-colors duration-300 font-medium px-2">Properties</a>
+                    <% if(typeof userType !== 'undefined' && userType === 'Individual') { %>
+                        <a href="/store/favourites" class="hover:text-blue-500 transition-colors duration-300 font-medium px-2">Favorites</a>
+                        <a href="/store/bookings" class="hover:text-blue-500 transition-colors duration-300 font-medium px-2">Bookings</a>
+                    <% } %> 
+                    <% if(typeof userType !== 'undefined' && userType === 'Business') { %>
+                        <a href="/host/add-home" class="hover:text-blue-500 transition-colors duration-300 font-medium px-2">Add Home</a>
+                        <a href="/host/host-home-list" class="hover:text-blue-500 transition-colors duration-300 font-medium px-2">My Listings</a>
+                    <% } %>
+                <% } %>
+                <a href="/about" class="hover:text-blue-500 transition-colors duration-300 font-medium px-2">About</a>
+            </div>
+            
+            <!-- Auth buttons -->
+            <div class="flex items-center space-x-4">
+                <% if(isLoggedIn) { %>
+                    <a href="/logout" class="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-full transition duration-300">Logout</a>
+                <% } else { %>
+                    <a href="/login" class="hover:text-blue-500 transition-colors duration-300 font-medium">Login</a>
+                    <% if(pageTitle != "Sign Up"){ %>
+                        <a href="/signup" class="bg-blue-500 hover:bg-blue-600 text-white font-medium px-4 py-2 rounded-full transition duration-300">Sign Up</a>
+                    <% } %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</nav>

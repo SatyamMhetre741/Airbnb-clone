@@ -1,0 +1,155 @@
+<%- include('../partials/head') %>
+<body class="bg-gray-50 min-h-screen">
+    <%- include('../partials/header') %>
+    <%- include('../partials/nav') %>
+
+    <main class="max-w-6xl mx-auto mt-10 px-4">
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <!-- Property Header -->
+            <div class="bg-blue-600 text-white p-6">
+                <h1 class="text-3xl font-bold"><%= home.houseName %></h1>
+                <p class="text-lg mt-2"><%= home.Location %></p>
+            </div>
+            
+            <!-- Property Image -->
+            <div class="w-full h-96 overflow-hidden">
+                <img src="<%= home.photoUrl %>" alt="<%= home.houseName %>" class="w-full h-full object-cover" onerror="this.src='/images/placeholder-house.jpg'">
+            </div>
+            
+            <!-- Property Details -->
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row md:justify-between mb-8">
+                    <div class="mb-4 md:mb-0">
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-2">Property Details</h2>                        
+                        <p class="text-gray-600"><span class="font-medium">Location:</span> <%= home.location %></p>
+                        <p class="text-gray-600"><span class="font-medium">Property ID:</span> <%= home._id %></p>
+                    </div>
+                    <div class="bg-gray-100 rounded-lg p-4 text-center">
+                        <p class="text-gray-600 mb-1">Price per night</p>
+                        <p class="text-3xl font-bold text-blue-600">₹<%= home.ppn %></p>
+                        <% if(home.booked) { %>
+                          <p class="mt-4 bg-gray-400 text-white py-2 px-6 rounded-lg transition duration-300 w-full cursor-not-allowed">Already Booked</p>
+                        <% } else { %>
+                            <form action="/store/booking/<%= home._id %>" method="POST" class="mt-4" id="booking-form">
+                                <div class="mb-4">
+                                    <label for="checkInDate" class="block text-sm font-medium text-gray-700 text-left mb-1">Check In</label>
+                                    <input type="date" id="checkInDate" name="checkInDate" required 
+                                           min="<%= new Date().toISOString().split('T')[0] %>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="checkOutDate" class="block text-sm font-medium text-gray-700 text-left mb-1">Check Out</label>
+                                    <input type="date" id="checkOutDate" name="checkOutDate" required 
+                                           min="<%= new Date().toISOString().split('T')[0] %>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                </div>
+                                <div id="date-error" class="text-red-500 text-sm mb-2 hidden">Check-out date must be after check-in date</div>
+                                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white py-2 px-6 rounded-lg transition duration-300 w-full">Book Now</button>
+                            </form>
+                            <script>
+                                document.getElementById('booking-form').addEventListener('submit', function(event) {
+                                    const checkInDate = new Date(document.getElementById('checkInDate').value);
+                                    const checkOutDate = new Date(document.getElementById('checkOutDate').value);
+                                    const errorDiv = document.getElementById('date-error');
+                                    
+                                    if (checkInDate >= checkOutDate) {
+                                        event.preventDefault();
+                                        errorDiv.classList.remove('hidden');
+                                    } else {
+                                        errorDiv.classList.add('hidden');
+                                    }
+                                });
+                                
+                                // Update min date of check-out when check-in changes
+                                document.getElementById('checkInDate').addEventListener('change', function() {
+                                    const checkInDate = this.value;
+                                    const checkOutInput = document.getElementById('checkOutDate');
+                                    
+                                    if (checkInDate) {
+                                        // Set minimum check-out date to be the day after check-in
+                                        const nextDay = new Date(checkInDate);
+                                        nextDay.setDate(nextDay.getDate() + 1);
+                                        checkOutInput.min = nextDay.toISOString().split('T')[0];
+                                        
+                                        // If current check-out date is before the new min, update it
+                                        if (checkOutInput.value && new Date(checkOutInput.value) <= new Date(checkInDate)) {
+                                            checkOutInput.value = nextDay.toISOString().split('T')[0];
+                                        }
+                                    }
+                                });
+                            </script>
+                        <% } %>
+                          <% if (locals.isFavourite) { %>
+                            <form action="/store/remove-from-favourites" method="POST" class="mt-2">
+                                <input type="hidden" name="homeId" value="<%= home._id %>">
+                                <button type="submit" class="bg-white border border-red-500 text-red-500 py-2 px-6 rounded-lg transition duration-300 w-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    Remove from Favorites
+                                </button>
+                            </form>                        <% } else { %>
+                            <form action="/store/add-to-favourites" method="POST" class="mt-2">
+                                <input type="hidden" name="homeId" value="<%= home._id %>">
+                                <button type="submit" class="bg-white border border-gray-300 text-gray-700 py-2 px-6 rounded-lg transition duration-300 w-full hover:bg-gray-50 flex items-center justify-center">
+                                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                    </svg>
+                                    Add to Favorites
+                                </button>
+                            </form>
+                        <% } %>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Description</h3>
+                    <p class="text-gray-600 mb-4">
+                        This beautiful property offers a unique experience with all the comforts of home. 
+                        Enjoy the stunning views, modern amenities, and convenient location.
+                    </p>
+                    
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 mt-6">Amenities</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Wi-Fi</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Air Conditioning</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Kitchen</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>TV</span>
+                        </div>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>Free Parking</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <a href="/store/home" class="text-blue-500 hover:underline">← Back to All Properties</a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</body>
+</html>

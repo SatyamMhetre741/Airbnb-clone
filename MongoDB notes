@@ -1,0 +1,37 @@
+Key Parts:
+db.collection('homes'): Selects the homes collection.
+
+.updateOne(filter, update): Updates a single document matching the filter.
+    filter: { _id: objectId } — finds the document with this _id.
+    update: { $set: { ... } } — sets the specified fields to new values.
+
+$set: MongoDB operator to update only the specified fields (does not overwrite the whole document).
+
+2. Essential MongoDB Operations in Node.js
+
+Insert a Document
+db.collection('homes').insertOne({
+  houseName: "Cozy Beach House",
+  Location: "Miami",
+  ppn: "150",
+  photoUrl: "..."
+});
+
+Find All Documents
+db.collection('homes').find().toArray();
+
+Find One Document by ID
+const objectId = new ObjectId(id);
+db.collection('homes').findOne({ _id: objectId });
+
+Update a Document
+db.collection('homes').updateOne(
+  { _id: objectId },           // Filter
+  { $set: { houseName: "New Name" } } // Update
+);
+
+Delete a Document
+db.collection('homes').deleteOne({ _id: objectId });
+
+Whenever you query by _id, always convert the string to an ObjectId:
+const objectId = new ObjectId(id);

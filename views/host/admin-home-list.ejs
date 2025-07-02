@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= pageTitle %></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/output.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <%- include('../partials/header') %>
+    <%- include('../partials/nav') %>    
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-blue-600 mb-8 text-center">Your Listed Properties</h1>
+        
+        <% if (locals.error) { %>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6 text-center">
+                <%= error %>
+            </div>
+        <% } %>
+        
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-800">Manage Your Properties</h2>
+                <a href="/host/add-home" class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md transition duration-300">+ Add New Property</a>
+            </div>
+            
+            <% if (homes.length === 0) { %>
+                <div class="text-center py-8">
+                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7m-7-7v14"></path>
+                    </svg>
+                    <p class="text-gray-500 text-lg">No properties listed yet.</p>
+                    <p class="text-gray-400 mt-2">Click the "Add New Property" button to get started!</p>
+                </div>
+            <% } else { %>
+                <div class="grid grid-cols-1 gap-6">
+                    <% homes.forEach(function(home) { %>
+                        <div class="flex flex-col md:flex-row bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">                            <!-- Image -->
+                            <div class="md:w-1/4 relative">
+                                <img class="object-cover h-48 w-full md:h-full" src="<%= home.photoUrl %>" alt="<%= home.houseName %>" onerror="this.src='/images/placeholder-house.svg'">
+                                <div class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                    ₹<%= home.ppn %>/night
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="p-5 md:w-2/4 flex flex-col justify-between">
+                                <div>
+                                    <h2 class="text-xl font-bold text-gray-800 mb-2"><%= home.houseName %></h2>
+                                    <p class="text-gray-600 mb-2 flex items-center">
+                                        <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                        <%= home.Location %>
+                                    </p>
+                                </div>                                <div class="mt-4 text-sm text-gray-500">
+                                    <p>Property ID: <%= home._id %></p>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="bg-gray-50 p-5 md:w-1/4 flex flex-col justify-center items-center space-y-3 border-t md:border-t-0 md:border-l border-gray-200">                                
+                                <a href="/store/home-details/<%= home._id %>" class="w-full bg-green-500 hover:bg-green-600 text-white text-center font-medium py-2 px-4 rounded-md transition duration-300">
+                                    View
+                                </a>                               
+                                <a href="/host/edit-home/<%= home._id %>?editing=true" class="w-full bg-blue-500 hover:bg-blue-600 text-white text-center font-medium py-2 px-4 rounded-md transition duration-300">
+                                    Edit
+                                </a>                                
+                                <form action="/host/delete-home/<%= home._id %>" method="POST" class="w-full">
+                                    <button type="submit" class="bg-red-400 w-full hover:bg-red-500 text-white font-medium py-2 px-4 rounded-md transition duration-300">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</body>
+</html>

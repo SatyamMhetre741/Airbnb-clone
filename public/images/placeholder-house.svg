@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="400" height="250" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="250" fill="#f2f2f2"/>
+  <rect x="160" y="80" width="80" height="60" fill="#d9d9d9" stroke="#999" stroke-width="2"/>
+  <path d="M 160,140 L 200,110 L 240,140 Z" fill="#d9d9d9" stroke="#999" stroke-width="2"/>
+  <text x="200" y="170" font-family="Arial" font-size="14" text-anchor="middle" fill="#666">Property Image</text>
+</svg>
