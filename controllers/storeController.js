@@ -8,13 +8,7 @@ const bookingUtils = require('../util/bookingUtils');
 exports.getHomes = (req, res, next) => { 
     // First update booking status to ensure homes are properly marked as available/unavailable
     bookingUtils.updateBookingStatus()
-        .then((result) => {
-            if (result.error) {
-                console.error("Error updating booking status:", result.error);
-                // Continue anyway to show homes
-            } else if (result.updated > 0) {
-                console.log(`Updated status for ${result.updated} booking(s)`);
-            }
+        .then(() => {
             return Home.find();
         })
         .then(homes => {
@@ -160,14 +154,7 @@ exports.getHomeDetails = (req, res, next) => {
     
     // First update booking status to ensure home availability is current
     bookingUtils.updateBookingStatus()
-        .then((result) => {
-            if (result.error) {
-                console.error("Error updating booking status:", result.error);
-                // Continue anyway to show home details
-            } else if (result.updated > 0) {
-                console.log(`Updated status for ${result.updated} booking(s)`);
-            }
-            
+        .then(() => {
             // We need two promises, one to get the home, one to check if it's a favorite
             let homeData;
             
@@ -373,74 +360,94 @@ exports.postHomeBooking = (req, res) => {
     const oneDay = 24 * 60 * 60 * 1000; // hours*minutes*seconds*milliseconds
     const diffDays = Math.round(Math.abs((checkOutDate - checkInDate) / oneDay));
     
-    // Use our helper function to check if the home is available for booking
-    bookingUtils.isHomeAvailableForBooking(homeId, checkInDate, checkOutDate)
-        .then(isAvailable => {
-            if (!isAvailable) {
-                return res.status(400).render('error', {
-                    pageTitle: 'Booking Conflict',
-                    error: 'This property is already booked for some or all of the selected dates',
-                    isLoggedIn: req.session.isLoggedIn,
-                    userType: req.session.userType
-                });
+    // First check if there are any overlapping bookings for this home
+    Booking.find({
+        homeId: homeId,
+        status: 'confirmed',
+        $or: [
+            // Check in date falls within another booking
+            {
+                checkInDate: { $lte: checkInDate },
+                checkOutDate: { $gte: checkInDate }
+            },
+            // Check out date falls within another booking
+            {
+                checkInDate: { $lte: checkOutDate },
+                checkOutDate: { $gte: checkOutDate }
+            },
+            // Booking completely contains another booking
+            {
+                checkInDate: { $gte: checkInDate },
+                checkOutDate: { $lte: checkOutDate }
             }
-            
-            return Home.findById(homeId)
-                .then(home => {
-                    if (!home) {
-                        throw new Error('Home not found');
-                    }
-                    
-                    // Calculate total price based on days and price per night
-                    const totalPrice = diffDays * home.ppn;
-                    
-                    // Create new booking
-                    const booking = new Booking({
-                        homeId: homeId,
-                        userId: userId,
-                        checkInDate: checkInDate,
-                        checkOutDate: checkOutDate,
-                        totalPrice: totalPrice,
-                        status: 'confirmed'
-                    });
-                    
-                    // Save booking and update home status
-                    return booking.save()
-                        .then(result => {
-                            // Mark the home as booked
-                            home.booked = true;
-                            return home.save();
-                        })
-                        .then(() => {
-                            res.redirect('/store/bookings');
-                        });
-                })
-                .catch(err => {
-                    console.error('Database error:', err);
-                    let errorMessage = 'Failed to create booking';
-                    if (err.message === 'Home not found') {
-                        errorMessage = 'Home not found';
-                    } else if (err.message === 'Home is already booked') {
-                        errorMessage = 'This property is already booked';
-                    }
-                    
-                    res.status(500).render('error', {
-                        pageTitle: 'Booking Error',
-                        error: errorMessage,
-                        isLoggedIn: req.session.isLoggedIn,
-                        userType: req.session.userType
-                    });
-                });
-        })
-        .catch(err => {
-            console.error('Database error:', err);
-            res.status(500).render('error', {
-                pageTitle: 'Error',
-                error: 'Failed to check booking availability',
+        ]
+    })
+    .then(conflictingBookings => {
+        if (conflictingBookings.length > 0) {
+            return res.status(400).render('error', {
+                pageTitle: 'Booking Conflict',
+                error: 'This property is already booked for some or all of the selected dates',
                 isLoggedIn: req.session.isLoggedIn,
                 userType: req.session.userType
             });
+        }
+        
+        return Home.findById(homeId)
+            .then(home => {
+                if (!home) {
+                    throw new Error('Home not found');
+                }
+                
+                // Calculate total price based on days and price per night
+                const totalPrice = diffDays * home.ppn;
+                
+                // Create new booking
+                const booking = new Booking({
+                    homeId: homeId,
+                    userId: userId,
+                    checkInDate: checkInDate,
+                    checkOutDate: checkOutDate,
+                    totalPrice: totalPrice,
+                    status: 'confirmed'
+                });
+                
+                // Save booking and update home status
+                return booking.save()
+                    .then(result => {
+                        // Mark the home as booked
+                        home.booked = true;
+                        return home.save();
+                    })
+                    .then(() => {
+                        res.redirect('/store/bookings');
+                    });
+            })
+            .catch(err => {
+                console.error('Database error:', err);
+                let errorMessage = 'Failed to create booking';
+                if (err.message === 'Home not found') {
+                    errorMessage = 'Home not found';
+                } else if (err.message === 'Home is already booked') {
+                    errorMessage = 'This property is already booked';
+                }
+                
+                res.status(500).render('error', {
+                    pageTitle: 'Booking Error',
+                    error: errorMessage,
+                    isLoggedIn: req.session.isLoggedIn,
+                    userType: req.session.userType
+                });
+            });
+    })
+    .catch(err => {
+        console.error('Database error:', err);
+        res.status(500).render('error', {
+            pageTitle: 'Error',
+            error: 'Failed to check booking availability',
+            isLoggedIn: req.session.isLoggedIn,
+            userType: req.session.userType
         });
+    });
 };
 
 exports.postCancelBooking = (req, res) => {
